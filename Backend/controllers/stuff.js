@@ -1,5 +1,5 @@
 const Book = require('../models/book');
-const fs = require('fs'); // Pour gérer la suppression des fichiers (images)
+const fs = require('fs');
 
 // POST /api/books - Créer un nouveau livre
 exports.createBook = (req, res, next) => {
