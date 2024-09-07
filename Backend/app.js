@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const authRoutes = require('./routes/auth');
+const bookRoutes = require('./routes/book');
 
 mongoose.connect('mongodb+srv://pitanger:Shadowmatt42@cluster0.a9wie.mongodb.net/',
   { useNewUrlParser: true, useUnifiedTopology: true })
@@ -19,5 +20,7 @@ app.use((req, res, next) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/books', bookRoutes);
+
 
 module.exports = app;
