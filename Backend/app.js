@@ -9,8 +9,10 @@ mongoose.connect('mongodb+srv://pitanger:Shadowmatt42@cluster0.a9wie.mongodb.net
   .catch(() => console.log('Connexion à MongoDB échouée !'));
 
 const app = express();
+const path = require('path');
 
 app.use(express.json());
+app.use('/images', express.static(path.join(__dirname, 'images')));
 
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');

@@ -4,6 +4,8 @@ const fs = require('fs');
 // POST /api/books - Créer un nouveau livre
 exports.createBook = (req, res, next) => {
     const bookObject = JSON.parse(req.body.book);
+    delete bookObject._id;
+    delete bookObject._userId;
     const book = new Book({
         ...bookObject,
         imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
