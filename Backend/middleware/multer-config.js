@@ -3,7 +3,6 @@ const sharp = require('sharp');
 const path = require('path');
 const fs = require('fs');
 
-// Configuration de Multer pour enregistrer l'image en mémoire temporairement (buffer)
 const storage = multer.memoryStorage(); 
 
 const upload = multer({ 
@@ -17,32 +16,29 @@ const upload = multer({
   }
 }).single('image');
 
-// Middleware pour redimensionner, convertir en WebP et enregistrer l'image
 const processImage = async (req, res, next) => {
   if (!req.file) {
     return next();
   }
 
-  const name = req.file.originalname.split(' ').join('_').replace(/\.[^/.]+$/, "");
+  const name = req.file.originalname.split(' ').join('_').replace(/\.[^/.]+$/, "");  // Nettoyer le nom
   const filename = `${name}_${Date.now()}.webp`;
   
   const imagePath = path.join(__dirname, '../images', filename);
 
   try {
-    // Redimensionner et convertir l'image en WebP avec Sharp
     await sharp(req.file.buffer)
-      .resize(800) // Redimensionne à une largeur de 800px (modifiable selon tes besoins)
+      .resize(800)
       .toFormat('webp')
-      .webp({ quality: 80 }) // Ajuste la qualité de l'image compressée
-      .toFile(imagePath); // Enregistre l'image dans le dossier "images"
+      .webp({ quality: 80 })
+      .toFile(imagePath);
 
-    // Assigner le nom du fichier et son chemin dans la requête pour l'utilisation ultérieure
     req.file.filename = filename;
     req.file.path = `/images/${filename}`;
 
     next();
   } catch (error) {
-    console.error('Erreur lors de la conversion de l\'image:', error);
+    console.error('Erreur lors de la conversion de l\'image avec Sharp:', error);
     return res.status(500).json({ error: 'Erreur lors du traitement de l\'image.' });
   }
 };

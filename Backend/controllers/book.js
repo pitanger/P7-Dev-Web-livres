@@ -52,17 +52,20 @@ exports.getBestRatedBooks = (req, res, next) => {
 // PUT /api/books/:id - Modifier un livre
 exports.updateBook = async (req, res, next) => {
     try {
-        // Récupérer le livre actuel à partir de la base de données
+        console.log("Requête reçue:", req.body);
+        console.log("Fichier reçu:", req.file);
+
         const book = await Book.findOne({ _id: req.params.id });
 
-        // Préparer l'objet de mise à jour
+        if (!book) {
+            return res.status(404).json({ message: 'Livre non trouvé' });
+        }
+
         let bookObject;
         if (req.file) {
-            // Si un nouveau fichier image est fourni, il faut d'abord supprimer l'ancienne image
-            const oldImagePath = book.imageUrl.split(`${req.get('host')}`)[1]; // Récupérer le chemin relatif de l'ancienne image
+            const oldImagePath = book.imageUrl.split(`${req.get('host')}`)[1];
             const fullOldImagePath = path.join(__dirname, '..', oldImagePath);
 
-            // Supprimer l'ancienne image du serveur
             fs.unlink(fullOldImagePath, (err) => {
                 if (err) {
                     console.error('Erreur lors de la suppression de l\'ancienne image :', err);
@@ -71,25 +74,26 @@ exports.updateBook = async (req, res, next) => {
                 }
             });
 
-            // Mettre à jour l'URL de l'image avec la nouvelle image traitée
             bookObject = {
                 ...JSON.parse(req.body.book),
                 imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
             };
         } else {
-            // Si pas de fichier, on garde les autres propriétés
             bookObject = { ...req.body };
         }
 
-        // Mettre à jour le livre dans la base de données
         await Book.updateOne({ _id: req.params.id }, { ...bookObject, _id: req.params.id });
 
         res.status(200).json({ message: 'Livre modifié avec succès !' });
     } catch (error) {
-        console.error('Erreur lors de la mise à jour du livre :', error);
-        res.status(400).json({ error });
+        console.error('Erreur interne lors de la mise à jour du livre :', error);
+        res.status(500).json({ error: 'Erreur interne du serveur', details: error.message });
     }
 };
+
+
+
+
 
 // DELETE /api/books/:id - Supprimer un livre
 exports.deleteBook = (req, res, next) => {
