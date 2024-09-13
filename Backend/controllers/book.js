@@ -6,20 +6,20 @@ const path = require('path');
 // POST /api/books - Créer un nouveau livre
 exports.createBook = async (req, res) => {
     try {
-      const bookObject = JSON.parse(req.body.book);
-      const book = new Book({
-        ...bookObject,
-        imageUrl: `${req.protocol}://${req.get('host')}${req.file.path}`, // Utilise l'URL de l'image WebP traitée
-        averageRating: 0,
-      });
-  
-      await book.save();
-      res.status(201).json({ message: 'Livre enregistré avec succès !' });
+        const bookObject = JSON.parse(req.body.book);
+        const book = new Book({
+            ...bookObject,
+            imageUrl: `${req.protocol}://${req.get('host')}${req.file.path}`,
+        });
+
+        await book.save();
+        res.status(201).json({ message: 'Livre enregistré avec succès !' });
     } catch (error) {
-      console.error('Erreur lors de la création du livre:', error);
-      res.status(500).json({ error: 'Erreur lors de la création du livre' });
+        console.error('Erreur lors de la création du livre:', error);
+        res.status(500).json({ error: 'Erreur lors de la création du livre' });
     }
-  };
+};
+
   
 
 // GET /api/books - Récupérer tous les livres
@@ -115,15 +115,31 @@ exports.deleteBook = (req, res, next) => {
 // POST /api/books/:id/rating - Ajouter une note à un livre
 exports.rateBook = (req, res, next) => {
     Book.findOne({ _id: req.params.id }).then(book => {
+        if (!book) {
+            return res.status(404).json({ message: 'Book not found.' });
+        }
+
+        const existingRating = book.ratings.find(rating => rating.userId === req.body.userId);
+        if (existingRating) {
+            return res.status(400).json({ message: 'User has already rated this book.' });
+        }
+
+        const newRatingValue = req.body.rating;
+        if (typeof newRatingValue !== 'number' || newRatingValue < 1 || newRatingValue > 5) {
+            return res.status(400).json({ message: 'Rating must be a number between 1 and 5.' });
+        }
+
         const newRating = {
             userId: req.body.userId,
-            grade: req.body.rating,
+            grade: newRatingValue,
         };
         book.ratings.push(newRating);
-        book.averageRating = book.ratings.reduce((acc, rating) => acc + rating.grade, 0) / book.ratings.length;
 
-        book.save().then(() => {
-            res.status(200).json(book);
+        const totalRatingSum = book.ratings.reduce((acc, rating) => acc + rating.grade, 0);
+        book.averageRating = totalRatingSum / book.ratings.length;
+
+        return book.save().then(updatedBook => {
+            res.status(200).json(updatedBook);
         }).catch(error => {
             res.status(400).json({ error });
         });

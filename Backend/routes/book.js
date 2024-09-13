@@ -8,7 +8,7 @@ router.get('/', booksCtrl.getAllBooks);
 router.get('/bestrating', booksCtrl.getBestRatedBooks);
 
 router.get('/:id', booksCtrl.getOneBook);
-router.post('/', upload, processImage, booksCtrl.createBook); // Utilise les middlewares pour uploader et traiter l'image
+router.post('/', upload, processImage, booksCtrl.createBook);
 router.put('/:id', upload, processImage, booksCtrl.updateBook);
 router.delete('/:id', auth, booksCtrl.deleteBook);
 
