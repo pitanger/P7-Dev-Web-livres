@@ -73,7 +73,6 @@ exports.updateBook = async (req, res, next) => {
                     console.log('Ancienne image supprimée avec succès');
                 }
             });
-
             bookObject = {
                 ...JSON.parse(req.body.book),
                 imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
@@ -81,19 +80,13 @@ exports.updateBook = async (req, res, next) => {
         } else {
             bookObject = { ...req.body };
         }
-
         await Book.updateOne({ _id: req.params.id }, { ...bookObject, _id: req.params.id });
-
         res.status(200).json({ message: 'Livre modifié avec succès !' });
     } catch (error) {
         console.error('Erreur interne lors de la mise à jour du livre :', error);
         res.status(500).json({ error: 'Erreur interne du serveur', details: error.message });
     }
 };
-
-
-
-
 
 // DELETE /api/books/:id - Supprimer un livre
 exports.deleteBook = (req, res, next) => {
